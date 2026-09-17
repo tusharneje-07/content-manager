@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Content Manager{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/logo.png') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css', v='20260917-8') }}">
+</head>
+<body class="min-h-screen bg-canvas pb-16">
+
+  <nav class="nav-shell">
+    <div class="mx-auto flex h-16 w-full max-w-content items-center justify-between px-4 sm:px-8">
+      <a href="{{ url_for('index') }}" class="flex min-w-0 items-center gap-3" aria-label="Content Manager home">
+        <img src="{{ url_for('static', filename='images/logo.png') }}" alt="" class="h-9 w-9 shrink-0 rounded-xl object-cover ring-1 ring-white/10">
+        <span class="truncate font-sans text-sm font-bold uppercase tracking-[0.18em] text-ink">content manager</span>
+      </a>
+
+      <div class="flex items-center gap-1 sm:gap-3">
+        <a href="{{ url_for('index') }}" class="btn-ghost hidden sm:inline-flex">Library</a>
+        <a href="{{ url_for('add_post') }}" id="nav-add-link" class="btn-accent px-3 sm:px-4">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+          <span class="hidden sm:inline">Add Post</span>
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="mx-auto w-full max-w-content px-4 pt-6 pb-10 sm:px-8 sm:pt-6 sm:pb-14">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="mb-8 flex flex-col gap-3" data-flash-stack>
+          {% for category, message in messages %}
+            <div class="command-row items-center justify-between text-label transition-opacity duration-300
+                        {% if category == 'success' %}border-success/30 bg-success/10 text-success{% else %}border-error/40 bg-error/10 text-white{% endif %}"
+                 data-flash>
+              <span>{{ message }}</span>
+              <button type="button" class="text-muted transition hover:text-ink" data-flash-close aria-label="Dismiss">&times;</button>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+  </main>
+
+  <div id="drive-status" class="fixed inset-x-0 bottom-0 z-40 hidden border-t border-dark-border bg-dark-canvas/95 backdrop-blur" data-drive-status>
+    <div class="mx-auto flex min-h-12 w-full max-w-content items-center justify-between gap-4 px-4 sm:px-8">
+      <div class="flex min-w-0 items-center gap-3" role="status" aria-live="polite">
+        <span class="h-2 w-2 shrink-0 rounded-full bg-muted" data-drive-status-dot title="Google Drive status"></span>
+        <span class="truncate font-mono text-code text-body" data-drive-status-message>Checking Google Drive access...</span>
+        <div class="hidden min-w-0 items-center gap-3" data-drive-activity>
+          <span class="truncate font-mono text-code text-body" data-drive-activity-message></span>
+          <div class="hidden h-1 w-24 overflow-hidden rounded-pill bg-white/[0.08] sm:block">
+            <div class="h-full w-0 rounded-pill bg-primary transition-all duration-300" data-drive-progress></div>
+          </div>
+          <span class="font-mono text-code text-primary" data-drive-progress-text>0%</span>
+        </div>
+      </div>
+      <a href="{{ url_for('drive_login') }}" class="btn-accent hidden min-h-9 shrink-0 px-3 text-code" data-drive-login>Authenticate</a>
+    </div>
+  </div>
+
+  <div id="toast" class="pointer-events-none fixed bottom-6 left-1/2 z-50 hidden max-w-[90vw] -translate-x-1/2">
+    <div class="modal-panel rounded-pill px-5 py-3 text-label text-white" data-toast-panel></div>
+  </div>
+
+  <script src="{{ url_for('static', filename='js/app.js', v='20260917-5') }}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

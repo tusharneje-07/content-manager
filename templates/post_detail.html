@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+{% block title %}{{ post['title'] }} · Content Manager{% endblock %}
+
+{% block content %}
+<header class="mb-8 border-b border-dark-border pb-8">
+  <a href="{{ url_for('index') }}" class="btn-ghost -ml-3 mb-5">← Back to library</a>
+  <div class="flex flex-wrap items-center gap-3">
+    <span class="chip bg-primary/10 text-accent">{{ post['title'] | post_number }}</span>
+    <h1 class="min-w-0 break-words text-2xl font-bold tracking-tight text-ink sm:text-title-lg">{{ post['title'] }}</h1>
+    {% if post['is_posted'] %}
+      <span class="status-posted"><span class="h-1.5 w-1.5 rounded-full bg-success"></span> Posted</span>
+    {% else %}
+      <span class="status-unposted"><span class="h-1.5 w-1.5 rounded-full bg-muted"></span> Not Posted</span>
+    {% endif %}
+  </div>
+</header>
+
+<div class="grid grid-cols-1 items-start gap-8 lg:grid-cols-[minmax(0,1fr)_400px]">
+  <section class="surface-panel overflow-hidden rounded-3xl">
+    <div class="grid grid-cols-1 gap-4 p-3 sm:grid-cols-2 sm:p-4">
+      {% for media in media_files %}
+        {% set media_url = url_for('serve_media_item', media_id=media['id']) if media['id'] else url_for('serve_media', post_id=post['id']) %}
+        {% set download_url = url_for('download_media_item', media_id=media['id']) if media['id'] else url_for('download_media', post_id=post['id']) %}
+        <article class="media-frame overflow-hidden rounded-xl">
+          {% if not media['exists'] %}
+              <div class="flex min-h-48 items-center justify-center bg-dark-surface-alt">
+              <div class="p-4 text-center">
+                <p class="mb-2 font-sans text-label uppercase text-error">Missing file</p>
+                <p class="text-caption text-body">This media file is no longer on disk.</p>
+              </div>
+            </div>
+          {% elif media['media_type'] == 'image' %}
+            <img src="{{ media_url }}" alt="{{ post['title'] }}" class="block h-auto w-full bg-dark-surface-alt object-contain">
+          {% else %}
+            <video src="{{ media_url }}" controls preload="metadata" playsinline class="block h-auto w-full bg-dark-canvas object-contain"></video>
+          {% endif %}
+          <div class="space-y-3 border-t border-border px-3 py-3">
+            <div class="flex items-center justify-between gap-3">
+              <p class="truncate font-mono text-code text-body">{{ media['filename'] | file_name }}</p>
+              <span class="chip shrink-0">{{ media['media_type'] }}</span>
+            </div>
+            {% if media['drive_status'] == 'synced' and media['drive_file_id'] %}
+              <span class="status-drive-synced"><span class="h-1.5 w-1.5 rounded-full bg-success"></span> Google Drive synced</span>
+            {% elif media['drive_status'] == 'uploading' %}
+              <span class="status-drive-syncing"><span class="h-1.5 w-1.5 rounded-full bg-primary"></span> Uploading to Google Drive</span>
+            {% elif media['drive_status'] == 'error' %}
+              <span class="status-drive-error"><span class="h-1.5 w-1.5 rounded-full bg-error"></span> Google Drive sync failed</span>
+            {% else %}
+              <span class="status-drive-pending"><span class="h-1.5 w-1.5 rounded-full bg-warning"></span> Not synced to Google Drive</span>
+            {% endif %}
+            {% if media['exists'] %}
+              <div class="flex flex-wrap gap-2">
+                {% if media['media_type'] == 'image' %}
+                  <button type="button" class="btn-secondary min-h-9 px-3" data-copy-media="{{ media_url }}">
+                    Copy Image
+                  </button>
+                {% endif %}
+                <a href="{{ download_url }}" class="btn-primary min-h-9 px-3">
+                  Download
+                </a>
+              </div>
+            {% endif %}
+          </div>
+        </article>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="space-y-6">
+    <div class="feature-card rounded-3xl p-5 sm:p-6">
+      <h2 class="mb-5 font-sans text-label uppercase text-muted">Post metadata</h2>
+      <dl class="divide-y divide-border">
+        <div class="py-4 first:pt-0">
+          <dt class="mb-1 font-sans text-label uppercase text-muted">Title</dt>
+          <dd class="break-words text-title-sm text-ink">{{ post['title'] }}</dd>
+        </div>
+        <div class="py-4">
+          <dt class="mb-1 font-sans text-label uppercase text-muted">Description</dt>
+          {% if post['description'] %}
+            <dd class="break-words text-base text-body">{{ post['description'] | rich_links }}</dd>
+          {% else %}
+            <dd class="text-caption italic text-muted">No description added.</dd>
+          {% endif %}
+        </div>
+        <div class="py-4">
+          <dt class="mb-1 font-sans text-label uppercase text-muted">Song</dt>
+          {% if post['song'] %}
+            <dd class="text-base text-ink">
+              {{ post['song'] | rich_links }}
+            </dd>
+          {% else %}
+            <dd class="text-caption italic text-muted">No song added.</dd>
+          {% endif %}
+        </div>
+        <div class="py-4">
+          <dt class="mb-1 font-sans text-label uppercase text-muted">Posted status</dt>
+          <dd>
+            {% if post['is_posted'] %}
+                <span class="status-posted"><span class="h-1.5 w-1.5 rounded-full bg-success"></span> Posted</span>
+            {% else %}
+                <span class="status-unposted"><span class="h-1.5 w-1.5 rounded-full bg-muted"></span> Not Posted</span>
+            {% endif %}
+          </dd>
+        </div>
+        <div class="py-4">
+          <dt class="mb-1 font-sans text-label uppercase text-muted">Instagram URL</dt>
+          {% if post['post_url'] %}
+            <dd>
+              <a href="{{ post['post_url'] }}" target="_blank" rel="noopener noreferrer"
+                 class="break-all text-base text-link transition hover:text-accent-hover hover:underline">{{ post['post_url'] }}</a>
+              <a href="{{ post['post_url'] }}" target="_blank" rel="noopener noreferrer"
+                 class="mt-1 inline-flex items-center gap-1 text-caption text-muted transition hover:text-ink">
+                Open in new tab
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8"/></svg>
+              </a>
+            </dd>
+          {% else %}
+            <dd class="text-caption italic text-muted">No Instagram URL added.</dd>
+          {% endif %}
+        </div>
+        <div class="py-4 last:pb-0">
+          <dt class="mb-1 font-sans text-label uppercase text-muted">Created</dt>
+          <dd class="font-mono text-code text-body">{{ post['created_at'] | india_time }} IST</dd>
+        </div>
+      </dl>
+    </div>
+
+    <div class="feature-card rounded-3xl p-5 sm:p-6">
+      <h2 class="mb-4 font-sans text-label uppercase text-muted">Actions</h2>
+      <div class="flex flex-wrap gap-3">
+        {% if not post['is_posted'] %}
+          <button type="button" class="btn-accent" data-posted-detail-open>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
+            Mark as Posted
+          </button>
+        {% endif %}
+        <a href="{{ url_for('edit_post', post_id=post['id']) }}" class="btn-secondary">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 3a2.8 2.8 0 114 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
+          Edit
+        </a>
+        <button type="button" class="btn-danger" data-delete-open>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/></svg>
+          Delete
+        </button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- Delete confirmation -->
+<div id="delete-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/70 p-4 backdrop-blur-sm" data-modal>
+  <div class="modal-panel w-full max-w-modal rounded-2xl p-6" role="dialog" aria-modal="true" aria-labelledby="delete-modal-title">
+    <p class="mb-2 font-sans text-label uppercase text-error">Danger zone</p>
+    <h2 id="delete-modal-title" class="mb-2 text-title-md text-ink">Delete this post?</h2>
+    <p class="mb-6 text-base text-body">“{{ post['title'] }}” and its media files will be permanently removed locally and from Google Drive.</p>
+    <div class="flex justify-end gap-3">
+      <button type="button" class="btn-secondary" data-modal-close>Cancel</button>
+      <form method="post" action="{{ url_for('delete_post', post_id=post['id']) }}">
+        <button type="submit" class="btn-danger px-4">Delete</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% if not post['is_posted'] %}
+<!-- Mark as posted: confirm → URL -->
+<div id="posted-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/70 p-4 backdrop-blur-sm" data-modal>
+  <div class="modal-panel w-full max-w-modal rounded-2xl p-6" role="dialog" aria-modal="true" aria-labelledby="posted-modal-title">
+    <p class="mb-2 font-sans text-label uppercase text-muted">Publish status</p>
+
+    <div data-step="confirm">
+      <h2 id="posted-modal-title" class="mb-2 text-title-md text-ink">Is this post published?</h2>
+      <p class="mb-6 text-base text-body">Confirm to attach the Instagram post URL.</p>
+      <div class="flex justify-end gap-3">
+        <button type="button" class="btn-secondary" data-modal-close>Cancel</button>
+        <button type="button" class="btn-accent px-4" data-step-next="url">Yes</button>
+      </div>
+    </div>
+
+    <form class="hidden" method="post" action="{{ url_for('mark_posted', post_id=post['id']) }}" data-step="url">
+      <h2 class="mb-2 text-title-md text-ink">Instagram Post URL</h2>
+      <label class="field-label mt-4" for="posted-detail-url">URL</label>
+      <input type="url" id="posted-detail-url" name="post_url" class="input-field"
+             placeholder="https://www.instagram.com/p/XXXXXXXX/" pattern="https?://.+"
+             title="Enter a full URL starting with http:// or https://" required autocomplete="off">
+      <p class="mb-6 mt-2 text-caption text-muted">Example: https://www.instagram.com/p/XXXXXXXX/</p>
+      <div class="flex justify-end gap-3">
+        <button type="button" class="btn-secondary" data-step-back="confirm">Back</button>
+        <button type="submit" class="btn-accent px-4">Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

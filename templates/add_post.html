@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}Add Post · Content Manager{% endblock %}
+
+{% block content %}
+<header class="mb-8 border-b border-dark-border pb-8">
+  <a href="{{ url_for('index') }}" class="btn-ghost -ml-3 mb-5">← Back to library</a>
+  <p class="mb-3 font-sans text-label uppercase text-accent">Create post</p>
+  <h1 class="text-3xl font-bold tracking-tight text-ink sm:text-headline-lg">Add a post.</h1>
+  <p class="mt-3 max-w-xl text-base text-body">Capture the media and metadata now. The sequence number is assigned when you save.</p>
+</header>
+
+<div class="feature-card w-full rounded-3xl p-5 sm:p-8">
+  <form method="post" enctype="multipart/form-data" data-posted-form data-youtube-song-form novalidate>
+
+    <div class="mb-8">
+      <label class="field-label" for="media">Media files <span class="text-primary">*</span></label>
+      <input type="file" id="media" name="media" required
+             multiple
+             accept=".jpg,.jpeg,.png,.webp,.gif,.mp4,.mov,.webm,.mkv"
+             class="input-field cursor-pointer file:mr-3 file:cursor-pointer file:rounded-pill file:border-0 file:bg-white file:px-4 file:py-2 file:text-button file:text-dark-canvas">
+      <p class="mt-2 text-caption text-muted">Select multiple images or videos at once. All selected files are grouped under one numbered post.</p>
+      <div class="media-frame mt-4 hidden overflow-hidden rounded-xl" data-media-preview></div>
+    </div>
+
+    <div class="grid gap-8 md:grid-cols-[minmax(0,1.15fr)_minmax(260px,0.85fr)]">
+    <div class="space-y-7">
+    <div>
+      <label class="field-label" for="title">Title <span class="text-primary">*</span></label>
+      <div class="flex items-stretch overflow-hidden rounded-lg border border-border bg-surface focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20">
+        <span class="flex items-center border-r border-border px-3 font-mono text-label text-primary">{{ next_number }}_</span>
+        <input type="text" id="title" name="title" required placeholder="Ganpati Photo"
+               value="{{ request.form.get('title', '') }}"
+               class="w-full bg-transparent px-3 py-2.5 text-body placeholder:text-muted focus:outline-none">
+      </div>
+      <div class="mt-3 rounded-xl border border-dark-border bg-primary/[0.06] px-4 py-3 text-caption text-body">
+        Files will be grouped under <span class="font-semibold text-accent">{{ next_number }}_Your_Title</span> and synced to Google Drive after saving.
+      </div>
+    </div>
+
+    <div>
+      <label class="field-label" for="description">Description</label>
+      <textarea id="description" name="description" rows="5" placeholder="Instagram caption…"
+                class="input-field resize-y">{{ request.form.get('description', '') }}</textarea>
+    </div>
+    </div>
+
+    <div class="space-y-7">
+    <div>
+      <label class="field-label" for="song">Song</label>
+      <input type="text" id="song" name="song" placeholder="Song name"
+             value="{{ request.form.get('song', '') }}" class="input-field" data-youtube-song-input>
+      <div class="mt-3 hidden" data-youtube-preview aria-live="polite">
+        <div class="youtube-capsule w-fit max-w-full">
+          <span class="youtube-badge">YouTube</span>
+          <span class="truncate" data-youtube-preview-title></span>
+        </div>
+        <p class="mt-2 text-caption text-error" data-youtube-preview-error></p>
+      </div>
+    </div>
+
+    <div class="command-row items-center justify-between">
+      <div>
+        <label class="cursor-pointer text-title-sm text-ink" for="is_posted">Posted</label>
+        <p class="text-caption text-body">Mark this only when the content is live on Instagram.</p>
+      </div>
+      <input type="checkbox" id="is_posted" name="is_posted" class="h-5 w-5 cursor-pointer accent-primary"
+             {% if request.form.get('is_posted') %}checked{% endif %}>
+    </div>
+
+    <div>
+      <label class="field-label" for="post_url">Instagram Post URL</label>
+      <input type="url" id="post_url" name="post_url" placeholder="https://www.instagram.com/p/XXXXXXXX/"
+             value="{{ request.form.get('post_url', '') }}" class="input-field">
+      <p class="mt-2 text-caption text-muted">Optional now; required when marked as posted.</p>
+    </div>
+    </div>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-3 border-t border-border pt-6">
+      <button type="submit" class="btn-accent w-full px-5 sm:w-auto" data-youtube-save>Save Post</button>
+      <a href="{{ url_for('index') }}" class="btn-secondary w-full sm:w-auto">Cancel</a>
+    </div>
+  </form>
+</div>
+
+{% include "_posted_modal.html" %}
+{% endblock %}

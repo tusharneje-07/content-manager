@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Error {{ code }} · Content Manager{% endblock %}
+
+{% block content %}
+<section class="grid-section rounded-xl p-4 sm:p-8">
+  <div class="surface-panel mx-auto mt-8 max-w-modal rounded-2xl p-8 text-center sm:mt-12">
+    <p class="mb-3 font-sans text-label uppercase text-error">Error {{ code }}</p>
+    <h1 class="mb-2 text-title-lg text-ink">
+      {% if code == 404 %}Not found{% elif code == 413 %}File too large{% else %}Something went wrong{% endif %}
+    </h1>
+    <p class="mb-6 text-base text-body">{{ message }}</p>
+    <a href="{{ url_for('index') }}" class="btn-primary px-5">Back to library</a>
+  </div>
+</section>
+{% endblock %}

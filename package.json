@@ -1,0 +1,14 @@
+{
+  "name": "content-manager",
+  "version": "1.0.0",
+  "description": "Local Instagram content manager — dev tooling for the Tailwind CSS build only.",
+  "private": true,
+  "scripts": {
+    "build:css": "tailwindcss -i ./static/css/input.css -o ./static/css/styles.css --minify",
+    "watch:css": "tailwindcss -i ./static/css/input.css -o ./static/css/styles.css --watch"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "tailwindcss": "^3.4.19"
+  }
+}
